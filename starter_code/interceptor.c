@@ -586,16 +586,16 @@ static void exit_function(void)
 	set_addr_ro((unsigned long) sys_call_table);
 	spin_unlock(&sys_call_table_lock);
 
-	int i = 0;
-	spin_lock(&my_table_lock);
-	for(i; i < NR_syscalls; i++){
-		if(table[i].intercept != 0){
-			spin_unlock(&my_table_lock);
-			my_syscall(REQUEST_SYSCALL_RELEASE, i, i);
-			spin_lock(&my_table_lock);
-		}
-	}
-	spin_unlock(&my_table_lock);
+	// int i = 0;
+	// spin_lock(&my_table_lock);
+	// for(i; i < NR_syscalls; i++){
+	// 	if(table[i].intercepted != 0){
+	// 		spin_unlock(&my_table_lock);
+	// 		my_syscall(REQUEST_SYSCALL_RELEASE, i, i);
+	// 		spin_lock(&my_table_lock);
+	// 	}
+	// }
+	// spin_unlock(&my_table_lock);
 
 	return 0;
 }
