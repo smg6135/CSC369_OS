@@ -353,7 +353,7 @@ asmlinkage long interceptor(struct pt_regs reg) {
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	//a) the syscall must be valid (not negative, not > NR_syscalls-1, and not MY_CUSTOM_SYSCALL itself)
-	if ((syscall < 0) || (syscall > (NR_syscalls - 1) || (syscall == MY_CUSTOM_SYSCALL)){
+	if ((syscall < 0) || (syscall > (NR_syscalls - 1)) || (syscall == MY_CUSTOM_SYSCALL)){
 		return -EINVAL;
 	}
 	/*b) the pid must be valid for the last two commands. It cannot be a negative integer, 
@@ -595,11 +595,7 @@ static void exit_function(void)
 	}
 	spin_unlock(&my_table_lock);
 
-
-
-
-
-
+	return 0;
 }
 
 module_init(init_function);
