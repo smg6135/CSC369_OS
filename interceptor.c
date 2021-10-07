@@ -612,7 +612,7 @@ static void exit_function(void)
 	for(i = 0; i < NR_syscalls; i++){
 		if(table[i].intercepted != 0){
 			//deintercept all syscalls
-			my_syscall(REQUEST_SYSCALL_RELEASE, i, i);
+			my_syscall(REQUEST_SYSCALL_RELEASE, current_uid(), i);
 			//unlocked after the call
 			spin_lock(&my_table_lock);
 		}
