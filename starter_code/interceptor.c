@@ -510,11 +510,11 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 				spin_unlock(&my_table_lock);
 			}
 		}
-		spin_unlock(&my_table_lock);
 	}else{
 		spin_unlock(&my_table_lock);
 		return -EINVAL;
 	}
+	spin_unlock(&my_table_lock);
 
 	return 0;
 }
