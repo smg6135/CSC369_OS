@@ -366,11 +366,13 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			if(pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
 				return -EINVAL;
 			}
+		}else if(pid == 0){
+			continue
 		}else{
 			return -EINVAL;
 		}
 	}
-
+//not a valid call
 	if((cmd != REQUEST_START_MONITORING) && (cmd != REQUEST_STOP_MONITORING) && (cmd != REQUEST_SYSCALL_INTERCEPT) && (cmd!= REQUEST_SYSCALL_RELEASE)){
 		return -EINVAL;
 	}
@@ -383,7 +385,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  *          (monitoring all pids is allowed only for root, obviously).
  *      To determine if two pids have the same owner, use the helper function provided above in this file.
 */
-	if((cmd != REQUEST_SYSCALL_INTERCEPT) || (cmd!= REQUEST_SYSCALL_RELEASE)){
+	if((cmd == REQUEST_SYSCALL_INTERCEPT) || (cmd == REQUEST_SYSCALL_RELEASE)){
 		if(current_uid() != 0){
 			return -EPERM;
 		}
