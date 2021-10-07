@@ -504,20 +504,32 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}
 		}
 	}else if(cmd == REQUEST_STOP_MONITORING){
-		if(table[syscall].monitored == 2){
-			// if stop request comes for a syscall that monitors all PIDS
-			spin_unlock(&my_table_lock);
-			return -EINVAL;
-		}else if(table[syscall].monitored == 1){
-			int res = del_pid_sysc(pid, syscall);
-			if(res != 0){
+		if(pid == 0){
+			// piazza @203
+			if(table[syscall].monitored == 0){
+				spin_unlock(&my_table_lock);
+				return -EINVAL;
+			}else{
+				destroy_list(syscall);
+				table[syscall].monitored = 0;
+				spin_unlock(&my_table_lock);
+			}
+		}else{
+			if(table[syscall].monitored == 2){
+				// if stop request comes for a syscall that monitors all PIDS
+				spin_unlock(&my_table_lock);
+				return -EINVAL;
+			}else if(table[syscall].monitored == 1){
+				int res = del_pid_sysc(pid, syscall);
+				if(res != 0){
+					spin_unlock(&my_table_lock);
+					return -EINVAL;
+				}
+				spin_unlock(&my_table_lock);
+			}else{
 				spin_unlock(&my_table_lock);
 				return -EINVAL;
 			}
-			spin_unlock(&my_table_lock);
-		}else{
-			spin_unlock(&my_table_lock);
-			return -EINVAL;
 		}
 	}else{
 		return -EINVAL;
