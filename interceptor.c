@@ -486,7 +486,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}else if(table[syscall].monitored == 1){
 				if(check_pid_monitored(syscall, pid) == 0){
 					// some are monitored but this one is not
-					res = add_pid_sysc(pid, syscall);
+					int res = add_pid_sysc(pid, syscall);
 					if(res != 0){
 						spin_unlock(&my_table_lock);
 						return -ENOMEM;
@@ -494,7 +494,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 					spin_unlock(&my_table_lock);
 				}// error condition where monitoring is alrdy monitored process is handeled
 			}else if(table[syscall].monitored == 0){
-				res = add_pid_sysc(pid, syscall);
+				int res = add_pid_sysc(pid, syscall);
 				if(res != 0){
 					spin_unlock(&my_table_lock);
 					return -ENOMEM;
@@ -511,12 +511,12 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			if(table[syscall].monitored == 2){
 				// if stop request comes for a syscall that monitors all PIDS
 				spin_unlock(&my_table_lock);
-				return -EINVAl;
+				return -EINVAL;
 			}else{
-				res = del_pid_sysc(pid, syscall);
+				int res = del_pid_sysc(pid, syscall);
 				if(res != 0){
 					spin_unlock(&my_table_lock);
-					return -ENINVAL;
+					return -EINVAL;
 				}
 				spin_unlock(&my_table_lock);
 			}
