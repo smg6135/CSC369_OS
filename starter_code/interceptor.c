@@ -402,7 +402,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  *     b) Cannot stop monitoring for a pid that is not being monitored, or if the 
  *        system call has not been intercepted yet.
 */
-	spin_lock(&my_table_lock);
 
 	if(cmd == REQUEST_SYSCALL_RELEASE){
 		if(table[syscall].intercepted == 0){
@@ -503,18 +502,15 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			spin_unlock(&my_table_lock);
 		}else{
 			if(table[syscall].monitored == 2){
-				add_pid_sysc(pid, syscall);
 				spin_unlock(&my_table_lock);
-			}else{
-				del_pid_sysc(pid, syscall);
-				spin_unlock(&my_table_lock);
+				return -EINVAL;
 			}
+			del_pid_sysc(pid, syscall);
+			spin_unlock(&my_table_lock);
 		}
 	}else{
-		spin_unlock(&my_table_lock);
 		return -EINVAL;
 	}
-	spin_unlock(&my_table_lock);
 
 	return 0;
 }
