@@ -366,6 +366,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}
 			if(pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
 				return -EINVAL;
+			}
 		}
 	}
 //not a valid call
