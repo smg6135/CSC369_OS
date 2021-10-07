@@ -476,6 +476,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		if(pid == 0){
 			// all processes are monitored for syscall, but only root has the permssion to issue this command
 			// but root permission is alrdy checked
+			destroy_list(syscall);
 			table[syscall].monitored = 2;
 			spin_unlock(&my_table_lock);
 		}else{
