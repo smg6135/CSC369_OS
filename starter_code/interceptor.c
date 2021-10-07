@@ -260,8 +260,6 @@ asmlinkage long my_exit_group(struct pt_regs reg)
 }
 //----------------------------------------------------------------
 
-
-
 /** 
  * This is the generic interceptor function.
  * It should just log a message and call the original syscall.
@@ -367,7 +365,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 				return -EINVAL;
 			}
 		}else if(pid == 0){
-			continue
+			continue;
 		}else{
 			return -EINVAL;
 		}
@@ -405,7 +403,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  *     b) Cannot stop monitoring for a pid that is not being monitored, or if the 
  *        system call has not been intercepted yet.
 */
-	spin_lock(&my_table_lock)
+	spin_lock(&my_table_lock);
 
 	if(cmd == REQUEST_SYSCALL_RELEASE){
 		if(table[syscall].intercepted == 0){
@@ -493,9 +491,9 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 					spin_unlock(&my_table_lock);
 				}// error condition where monitoring a alrdy monitored process is handeled
 			}else if(table[syscall].monitored == 0{
-				add_pid_sysc(pid, syscall)
+				add_pid_sysc(pid, syscall);
 				table[syscall].monitored = 1;
-				spin_unlock(&my_table_lock)
+				spin_unlock(&my_table_lock);
 			}
 		}
 	}else if(cmd == REQUEST_STOP_MONITORING){
