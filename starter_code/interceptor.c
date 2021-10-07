@@ -536,6 +536,7 @@ long (*orig_custom_syscall)(void);
  * - Ensure synchronization as needed.
  */
 static int init_function(void) {
+	int i = 0;
 	// nr_syscalls = number of system calls = number of interupts
 	spin_lock(&sys_call_table_lock);
 	set_addr_rw((unsigned long) sys_call_table);
@@ -547,7 +548,6 @@ static int init_function(void) {
 	spin_unlock(&sys_call_table_lock);
 
 	//Perform any necessary initializations for bookkeeping data structures. 
-	int i;
 	spin_lock(&my_table_lock);
 	for(i = 0; i < NR_syscalls; i++){
 		table[i].f = NULL;
@@ -575,7 +575,7 @@ static int init_function(void) {
  */
 static void exit_function(void)
 {        
-
+	int i = 0;
 	spin_lock(&sys_call_table_lock);
 	set_addr_rw((unsigned long) sys_call_table);
 	sys_call_table[MY_CUSTOM_SYSCALL] = orig_custom_syscall;
@@ -583,7 +583,6 @@ static void exit_function(void)
 	set_addr_ro((unsigned long) sys_call_table);
 	spin_unlock(&sys_call_table_lock);
 
-	int i;
 	spin_lock(&my_table_lock);
 	for(i = 0; i < NR_syscalls; i++){
 		if(table[i].intercepted != 0){
@@ -593,8 +592,6 @@ static void exit_function(void)
 		}
 	}
 	spin_unlock(&my_table_lock);
-
-	return 0;
 }
 
 module_init(init_function);
