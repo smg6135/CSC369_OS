@@ -348,7 +348,6 @@ asmlinkage long interceptor(struct pt_regs reg) {
  *   you might be holding, before you exit the function (including error cases!).  
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
-	spin_lock(&my_table_lock);
 	//a) the syscall must be valid (not negative, not > NR_syscalls-1, and not MY_CUSTOM_SYSCALL itself)
 	if ((syscall < 0) || (syscall > (NR_syscalls - 1)) || (syscall == MY_CUSTOM_SYSCALL)){
 		return -EINVAL;
@@ -403,6 +402,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  *     b) Cannot stop monitoring for a pid that is not being monitored, or if the 
  *        system call has not been intercepted yet.
 */
+	spin_lock(&my_table_lock);
 
 	if(cmd == REQUEST_SYSCALL_RELEASE){
 		if(table[syscall].intercepted == 0){
@@ -512,7 +512,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		}
 		spin_unlock(&my_table_lock);
 	}else{
-		
 		spin_unlock(&my_table_lock);
 		return -EINVAL;
 	}
