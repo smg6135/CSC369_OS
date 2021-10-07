@@ -392,7 +392,9 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			if(pid == 0){
 				return -EPERM;
 			}else{
-				check_pids_same_owner(pid, current->pid);
+				if(check_pids_same_owner(pid, current->pid) != 0){
+					return -EPERM;
+				}
 			}
 		}
 	}
@@ -487,11 +489,19 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}else if(table[syscall].monitored == 1){
 				if(check_pid_monitored(syscall, pid) == 0){
 					// some are monitored but this one is not
-					add_pid_sysc(pid, syscall);
+					res = add_pid_sysc(pid, syscall);
+					if(res != 0){
+						spin_unlock(&my_table_lock);
+						return -ENOMEM;
+					}
 					spin_unlock(&my_table_lock);
 				}// error condition where monitoring a alrdy monitored process is handeled
 			}else if(table[syscall].monitored == 0){
-				add_pid_sysc(pid, syscall);
+				res = add_pid_sysc(pid, syscall);
+				if(res != 0){
+					spin_unlock(&my_table_lock);
+					return -ENOMEM;
+				}
 				table[syscall].monitored = 1;
 				spin_unlock(&my_table_lock);
 			}
@@ -502,11 +512,20 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			spin_unlock(&my_table_lock);
 		}else{
 			if(table[syscall].monitored == 2){
-				add_pid_sysc(pid, syscall);
+				res = add_pid_sysc(pid, syscall);
+				if(res != 0){
+					spin_unlock(&my_table_lock);
+					return -ENOMEM;
+				}
+				spin_unlock(&my_table_lock);
+			}else{
+				res = del_pid_sysc(pid, syscall);
+				if(res != 0){
+					spin_unlock(&my_table_lock);
+					return -ENOMEM;
+				}
 				spin_unlock(&my_table_lock);
 			}
-			del_pid_sysc(pid, syscall);
-			spin_unlock(&my_table_lock);
 		}
 	}else{
 		return -EINVAL;
