@@ -360,14 +360,12 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  * */
 	// last two calls
 	if((cmd == REQUEST_START_MONITORING) || (cmd == REQUEST_STOP_MONITORING)){
-		if(pid > 0){
+		if(pid != 0){
+			if(pid < 0){
+				return -EINVAl;
+			}
 			if(pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
 				return -EINVAL;
-			}
-		}else if(pid == 0){
-			continue;
-		}else{
-			return -EINVAL;
 		}
 	}
 //not a valid call
@@ -490,7 +488,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 					add_pid_sysc(pid, syscall);
 					spin_unlock(&my_table_lock);
 				}// error condition where monitoring a alrdy monitored process is handeled
-			}else if(table[syscall].monitored == 0{
+			}else if(table[syscall].monitored == 0){
 				add_pid_sysc(pid, syscall);
 				table[syscall].monitored = 1;
 				spin_unlock(&my_table_lock);
@@ -498,7 +496,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		}
 	}else if(cmd == REQUEST_STOP_MONITORING){
 		if(pid == 0){
-			destroy_list(&my_table_lock);
+			destroy_list(syscall);
 			spin_unlock(&my_table_lock);
 		}else{
 			if(table[syscall].monitored == 2){
@@ -548,9 +546,9 @@ static int init_function(void) {
 	spin_unlock(&sys_call_table_lock);
 
 	//Perform any necessary initializations for bookkeeping data structures. 
-	int i = 0;
+	int i;
 	spin_lock(&my_table_lock);
-	for(i; i < NR_syscalls; i++){
+	for(i = 0; i < NR_syscalls; i++){
 		table[i].f = NULL;
 		table[i].intercepted = 0;
 		table[i].monitored = 0;
@@ -584,9 +582,9 @@ static void exit_function(void)
 	set_addr_ro((unsigned long) sys_call_table);
 	spin_unlock(&sys_call_table_lock);
 
-	int i = 0;
+	int i;
 	spin_lock(&my_table_lock);
-	for(i; i < NR_syscalls; i++){
+	for(i = 0; i < NR_syscalls; i++){
 		if(table[i].intercepted != 0){
 			spin_unlock(&my_table_lock);
 			my_syscall(REQUEST_SYSCALL_RELEASE, i, i);
