@@ -470,9 +470,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		spin_unlock(&sys_call_table_lock);
 
 		table[syscall].intercepted = 0;
-		table[syscall].monitored = 0;
-		table[syscall].listcount = 0;
-		destroy_list(syscall);
 		spin_unlock(&my_table_lock);
 	}else if(cmd == REQUEST_START_MONITORING){
 		if(pid == 0){
@@ -495,7 +492,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 						return -ENOMEM;
 					}
 					spin_unlock(&my_table_lock);
-				}// error condition where monitoring a alrdy monitored process is handeled
+				}// error condition where monitoring is alrdy monitored process is handeled
 			}else if(table[syscall].monitored == 0){
 				res = add_pid_sysc(pid, syscall);
 				if(res != 0){
@@ -512,17 +509,14 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			spin_unlock(&my_table_lock);
 		}else{
 			if(table[syscall].monitored == 2){
-				res = add_pid_sysc(pid, syscall);
-				if(res != 0){
-					spin_unlock(&my_table_lock);
-					return -ENOMEM;
-				}
+				// if stop request comes for a syscall that monitors all PIDS
 				spin_unlock(&my_table_lock);
+				return -EINVAl;
 			}else{
 				res = del_pid_sysc(pid, syscall);
 				if(res != 0){
 					spin_unlock(&my_table_lock);
-					return -ENOMEM;
+					return -ENINVAL;
 				}
 				spin_unlock(&my_table_lock);
 			}
@@ -606,7 +600,6 @@ static void exit_function(void)
 	spin_lock(&my_table_lock);
 	for(i = 0; i < NR_syscalls; i++){
 		if(table[i].intercepted != 0){
-			spin_unlock(&my_table_lock);
 			my_syscall(REQUEST_SYSCALL_RELEASE, i, i);
 			spin_lock(&my_table_lock);
 		}
