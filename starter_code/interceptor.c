@@ -362,7 +362,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	if((cmd == REQUEST_START_MONITORING) || (cmd == REQUEST_STOP_MONITORING)){
 		if(pid != 0){
 			if(pid < 0){
-				return -EINVAl;
+				return -EINVAL;
 			}
 			if(pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
 				return -EINVAL;
