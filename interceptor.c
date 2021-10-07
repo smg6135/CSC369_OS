@@ -392,7 +392,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			if(pid == 0){
 				return -EPERM;
 			}else{
-				if(check_pids_same_owner(pid, current->pid) != 0){
+				if(check_pids_same_owner(pid, current_uid()) != 0){
 					return -EPERM;
 				}
 			}
@@ -428,7 +428,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		}
 	}
 	if(cmd == REQUEST_START_MONITORING){
-		if(check_pid_monitored(syscall, pid)==1 || (table[syscall].intercepted == 2)){
+		if(check_pid_monitored(syscall, pid)==1 || (table[syscall].monitored == 2)){
 			spin_unlock(&my_table_lock);
 			return -EBUSY;
 		}
@@ -504,25 +504,20 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}
 		}
 	}else if(cmd == REQUEST_STOP_MONITORING){
-		if(pid == 0){
-			destroy_list(syscall);
+		if(table[syscall].monitored == 2){
+			// if stop request comes for a syscall that monitors all PIDS
 			spin_unlock(&my_table_lock);
-		}else{
-			if(table[syscall].monitored == 2){
-				// if stop request comes for a syscall that monitors all PIDS
-				spin_unlock(&my_table_lock);
-				return -EINVAL;
-			}else if(table[syscall].monitored == 1){
-				int res = del_pid_sysc(pid, syscall);
-				if(res != 0){
-					spin_unlock(&my_table_lock);
-					return -EINVAL;
-				}
-				spin_unlock(&my_table_lock);
-			}else{
+			return -EINVAL;
+		}else if(table[syscall].monitored == 1){
+			int res = del_pid_sysc(pid, syscall);
+			if(res != 0){
 				spin_unlock(&my_table_lock);
 				return -EINVAL;
 			}
+			spin_unlock(&my_table_lock);
+		}else{
+			spin_unlock(&my_table_lock);
+			return -EINVAL;
 		}
 	}else{
 		return -EINVAL;
