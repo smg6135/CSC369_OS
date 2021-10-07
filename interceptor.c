@@ -394,7 +394,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			}else{
 				check_pids_same_owner(pid, current->pid);
 			}
-
 		}
 	}
  /* - Check for correct context of commands (-EINVAL):
@@ -402,6 +401,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
  *     b) Cannot stop monitoring for a pid that is not being monitored, or if the 
  *        system call has not been intercepted yet.
 */
+	spin_lock(&my_table_lock);
 
 	if(cmd == REQUEST_SYSCALL_RELEASE){
 		if(table[syscall].intercepted == 0){
